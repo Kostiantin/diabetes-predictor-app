@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Risk Assessment - Am I Diabetic?</title>
+    <meta name="description" content="Check if you have diabetes risk with our free online tool. Enter age, BMI, HbA1c, and more to assess 'Am I diabetic?' with an instant risk estimate. Not a medical diagnosis.">
+    <meta name="keywords" content="diabetes risk assessment, am I diabetic, check if I have diabetes, diabetes calculator, diabetes risk tool, predict diabetes, health assessment, BMI calculator, HbA1c, blood glucose">
+    <meta name="author" content="Your Name or Your Organization">
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph Tags for Social Media -->
+    <meta property="og:title" content="Diabetes Risk Assessment - Am I Diabetic?">
+    <meta property="og:description" content="Wondering 'Am I diabetic?' Use our free tool to check your diabetes risk with inputs like BMI, HbA1c, and blood glucose for a personalized estimate.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourwebsite.com">
+    <meta property="og:image" content="https://yourwebsite.com/images/diabetes-risk-tool.png">
+    <meta property="og:site_name" content="Diabetes Risk Assessment">
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Diabetes Risk Assessment - Am I Diabetic?">
+    <meta name="twitter:description" content="Check if you have diabetes risk with our free tool. Answer 'Am I diabetic?' with a quick assessment of your health factors. Try now!">
+    <meta name="twitter:image" content="https://yourwebsite.com/images/diabetes-risk-tool.png">
+    <!-- Canonical Tag -->
+    <link rel="canonical" href="https://yourwebsite.com">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .form-label {
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .prediction-result {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        canvas {
+            max-width: 300px;
+            margin: 5rem auto;
+        }
+        .prediction-message {
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .info-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .info-circle:hover {
+            background-color: #0056b3;
+        }
+        .custom-text-small {
+            font-size: 13px; 
+            line-height: 15px;
+        }
+        h1.main-h {
+            font-size: 35px;
+        }
+        h2.card-title {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-12 mb-12">
+                <h1 class="main-h">Diabetes Risk Assessment</h1>
+                <p class="mb-3 custom-text-small">Wondering 'Am I diabetic?' Our Diabetes Risk Assessment model was trained on a comprehensive dataset of 100,000 health records, including factors like age, gender, BMI, HbA1c levels, blood glucose, hypertension, heart disease, and smoking history. This data enables the model to estimate your diabetes risk based on similar health profiles. <em><strong>Please note, this tool provides an estimated risk and is not a medical diagnosis. Consult a healthcare professional for personalized advice. Dataset was taken from <a href="https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset?resource=download" target="_blank">KAGGLE</a></strong></em></p>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Form Column -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Please fill the form with your latest health data for an accurate assessment.</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="/predict/" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="age" name="age" min="0" max="120" value="{{ form_data.age if form_data.age is not none else '' }}" required>
+                                <div class="invalid-feedback">Please enter a valid age (0-120).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="gender" class="form-label">Gender</label>
+                                <select class="form-select" id="gender" name="gender" required>
+                                    <option value="" disabled {% if not form_data.gender %}selected{% endif %}>Select gender</option>
+                                    <option value="Male" {% if form_data.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if form_data.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if form_data.gender == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a gender.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="bmi" class="form-label">
+                                    BMI
+                                    <span class="info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Body Mass Index (BMI) measures body fat based on height and weight. Enter a value between 10 and 100 (e.g., 25).">?</span>
+                                </label>
+                                <input type="number" class="form-control" id="bmi" name="bmi" min="10" max="100" value="{{ form_data.bmi if form_data.bmi is not none else '' }}" required>
+                                <div class="invalid-feedback">Please enter a valid integer BMI (10-100).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="hba1c" class="form-label">
+                                    HbA1c Level
+                                    <span class="info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="HbA1c reflects average blood sugar levels over 2-3 months. Enter a value between 0 and 20 (e.g., 5.7).">?</span>
+                                </label>
+                                <input type="number" class="form-control" id="hba1c" name="hba1c" min="0" max="20" value="{{ form_data.hba1c if form_data.hba1c is not none else '' }}" required>
+                                <div class="invalid-feedback">Please enter a valid integer HbA1c level (0-20).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="glucose" class="form-label">
+                                    Blood Glucose Level
+                                    <span class="info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Blood Glucose Level measures current blood sugar in mg/dL. Enter a value between 0 and 500 (e.g., 120).">?</span>
+                                </label>
+                                <input type="number" class="form-control" id="glucose" name="glucose" min="0" max="500" value="{{ form_data.glucose if form_data.glucose is not none else '' }}" required>
+                                <div class="invalid-feedback">Please enter a valid integer glucose level (0-500).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="heart_disease" class="form-label">Heart Disease</label>
+                                <select class="form-select" id="heart_disease" name="heart_disease" required>
+                                    <option value="" disabled {% if not form_data.heart_disease %}selected{% endif %}>Select option</option>
+                                    <option value="No" {% if form_data.heart_disease == 'No' %}selected{% endif %}>No</option>
+                                    <option value="Yes" {% if form_data.heart_disease == 'Yes' %}selected{% endif %}>Yes</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an option.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="hypertension" class="form-label">
+                                    Hypertension
+                                    <span class="info-circle" data-bs-toggle="tooltip" data-bs-placement="top" title="Hypertension indicates high blood pressure. Select 'Yes' if diagnosed, otherwise 'No'.">?</span>
+                                </label>
+                                <select class="form-select" id="hypertension" name="hypertension" required>
+                                    <option value="" disabled {% if not form_data.hypertension %}selected{% endif %}>Select option</option>
+                                    <option value="No" {% if form_data.hypertension == 'No' %}selected{% endif %}>No</option>
+                                    <option value="Yes" {% if form_data.hypertension == 'Yes' %}selected{% endif %}>Yes</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an option.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="smoking_history" class="form-label">Smoking History</label>
+                                <select class="form-select" id="smoking_history" name="smoking_history" required>
+                                    <option value="" disabled {% if not form_data.smoking_history %}selected{% endif %}>Select smoking history</option>
+                                    <option value="never" {% if form_data.smoking_history == 'never' %}selected{% endif %}>Never</option>
+                                    <option value="No Info" {% if form_data.smoking_history == 'No Info' %}selected{% endif %}>No Info</option>
+                                    <option value="former" {% if form_data.smoking_history == 'former' %}selected{% endif %}>Former</option>
+                                    <option value="current" {% if form_data.smoking_history == 'current' %}selected{% endif %}>Current</option>
+                                    <option value="ever" {% if form_data.smoking_history == 'ever' %}selected{% endif %}>Ever</option>
+                                    <option value="not current" {% if form_data.smoking_history == 'not current' %}selected{% endif %}>Not current</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a smoking history.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Predict</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Column -->
+            <div class="col-lg-6 col-12 mb-4">
+                <div class="card prediction-result">
+                    <div class="card-body text-center">
+                        <h2 class="card-title">Prediction Result</h2>
+                        {% if prediction is not none %}
+                            <p>{{ prediction | safe }}</p>
+                            <p class="prediction-message">
+                                {% if diabetic_prob > 50 %}
+                                    With a {{ diabetic_prob | float | round(2) }}% chance of diabetes, you should consult a doctor for further evaluation.
+                                {% else %}
+                                    With a {{ diabetic_prob | float | round(2) }}% chance of diabetes, your risk is low, but regular check-ups are recommended.
+                                {% endif %}
+                            </p>
+                        {% else %}
+                            <p>Here you will see the probability of diabetes.</p>
+                        {% endif %}
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Form Validation Script -->
+    <script>
+        (function () {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
+    <!-- Tooltip Initialization Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    <!-- Chart.js Script -->
+    <script>
+        // Set default dummy data or real prediction data
+        const diabeticProb = {% if prediction is not none %}{{ diabetic_prob | safe }}{% else %}50{% endif %};
+        console.log("Diabetic Probability:", diabeticProb);
+        const notDiabeticProb = 100 - diabeticProb;
+
+        // Create pie chart
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Not Diabetic', 'Diabetic'],
+                datasets: [{
+                    data: [notDiabeticProb, diabeticProb],
+                    backgroundColor: ['#36A2EB', '#FF6384'],
+                    borderColor: ['#ffffff', '#ffffff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.label}: ${context.parsed.toFixed(2)}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

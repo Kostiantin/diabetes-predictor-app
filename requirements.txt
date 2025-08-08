@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pandas
+scikit-learn==1.5.1
+joblib
+imbalanced-learn
+jinja2
+python-multipart
