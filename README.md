@@ -51,8 +51,13 @@ diabetes-predictor-app/
 │
 ├── app/
 │   ├── main.py                # FastAPI entry point
-│   ├── templates/             # HTML templates
-│   └── static/                # CSS or JS (optional)
+│   ├── templates/             # HTML templates (index.html)
+│   │   └── index.html
+│   └── static/                # Static files (CSS, favicon, images)
+│       ├── css/
+│       │   └── styles.css
+│       ├── favicon.png
+│       
 │
 ├── model/
 │   └── diabetes_model.pkl     # Trained ML model
@@ -63,30 +68,31 @@ diabetes-predictor-app/
 ├── requirements.txt
 ├── README.md
 └── .gitignore
-
+```
+   
 ---
 
 ## 📋 How To Install
 
-- Clone the repository:
+1. Clone the repository:
    ```bash
    git clone https://github.com/Kostiantin/diabetes-predictor-app.git
    cd diabetes-predictor-app
    ```
 
-- Create a virtual environment and install dependencies:
+2. Create a virtual environment and install dependencies:
    ```bash
    python -m venv venv
    source venv/bin/activate  # or `venv\Scripts\activate` on Windows
    pip install -r requirements.txt
    ```
 
-- Run the app:
+3. Run the app:
    ```bash
    uvicorn app.main:app --reload
    ```
 
-- Open your browser and go to:
+4. Open your browser and go to:
    ```
    http://127.0.0.1:8000
    ```
