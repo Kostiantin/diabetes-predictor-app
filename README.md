@@ -65,7 +65,7 @@ diabetes-predictor-app/
 └── .gitignore
 
 
-## Usage
+## 📋 Usage
 
 1. Clone the repository:
    ```bash
