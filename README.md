@@ -65,6 +65,8 @@ diabetes-predictor-app/
 └── .gitignore
 
 
+---
+
 ## 📋 Usage
 
 1. Clone the repository:
