@@ -64,10 +64,9 @@ diabetes-predictor-app/
 ├── README.md
 └── .gitignore
 
-
 ---
 
-## 📋 Usage
+## 📋 How To Install
 
 1. Clone the repository:
    ```bash
