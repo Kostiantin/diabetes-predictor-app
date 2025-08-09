@@ -1,11 +1,16 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import joblib
 import pandas as pd
 import os
 
 app = FastAPI()
+
+# Mount the static files directory to serve CSS, favicon, and images
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 templates = Jinja2Templates(directory="app/templates")
 
 # Load model on startup
