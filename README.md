@@ -68,25 +68,25 @@ diabetes-predictor-app/
 
 ## 📋 How To Install
 
-1. Clone the repository:
+- Clone the repository:
    ```bash
    git clone https://github.com/Kostiantin/diabetes-predictor-app.git
    cd diabetes-predictor-app
    ```
 
-2. Create a virtual environment and install dependencies:
+- Create a virtual environment and install dependencies:
    ```bash
    python -m venv venv
    source venv/bin/activate  # or `venv\Scripts\activate` on Windows
    pip install -r requirements.txt
    ```
 
-3. Run the app:
+- Run the app:
    ```bash
    uvicorn app.main:app --reload
    ```
 
-4. Open your browser and go to:
+- Open your browser and go to:
    ```
    http://127.0.0.1:8000
    ```
