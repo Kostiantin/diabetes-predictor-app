@@ -15,7 +15,7 @@ import boto3
 app = FastAPI()
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 USE_LOCAL_MODEL = 0 # 0 - use from AWS
