@@ -5,19 +5,49 @@ from fastapi.staticfiles import StaticFiles
 import joblib
 import pandas as pd
 import os
+import tempfile
+import boto3
 
 app = FastAPI()
 
-# Mount the static files directory to serve CSS, favicon, and images
+# Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
 templates = Jinja2Templates(directory="app/templates")
 
-# Load model on startup
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_path = os.path.join(BASE_DIR, "model", "diabetes_model.pkl")
-model = joblib.load(model_path)
+# ------------------------
+# Model Loading Logic
+# ------------------------
+bucket_name = "diabetes-model-bucket-2025"
+model_key = "diabetes_model.pkl"
 
+def load_model_from_s3():
+    """Download model from S3 and load it."""
+    s3 = boto3.client("s3")
+    tmp_dir = tempfile.gettempdir()
+    local_model_path = os.path.join(tmp_dir, model_key)
+
+    # Download from S3 if not already cached
+    if not os.path.exists(local_model_path):
+        s3.download_file(bucket_name, model_key, local_model_path)
+
+    return joblib.load(local_model_path)
+
+def load_model():
+    """Decide whether to use local model or S3 model."""
+    use_local = os.getenv("USE_LOCAL_MODEL", "0") == "1"
+    if use_local:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(base_dir, "model", "diabetes_model.pkl")
+        return joblib.load(model_path)
+    else:
+        return load_model_from_s3()
+
+# Load model at startup
+model = load_model()
+
+# ------------------------
+# Preprocessing
+# ------------------------
 def preprocess_input(gender, age, bmi, hba1c, glucose, heart_disease, hypertension, smoking_history):
     # One-hot encode gender
     gender_Female = 1 if gender == "Female" else 0
@@ -25,16 +55,14 @@ def preprocess_input(gender, age, bmi, hba1c, glucose, heart_disease, hypertensi
     gender_Other = 1 if gender == "Other" else 0
 
     # One-hot encode smoking_history
-    smoking_options = [
-        "No Info", "current", "ever", "former", "never", "not current"
-    ]
+    smoking_options = ["No Info", "current", "ever", "former", "never", "not current"]
     smoking_encoded = {f"smoking_history_{opt}": int(smoking_history == opt) for opt in smoking_options}
 
-    # Binary encode heart disease and hypertension
+    # Binary encode
     heart_disease_flag = 1 if heart_disease == "Yes" else 0
     hypertension_flag = 1 if hypertension == "Yes" else 0
 
-    # Build the full dictionary
+    # Build dictionary
     data = {
         "age": int(age),
         "hypertension": hypertension_flag,
@@ -48,34 +76,26 @@ def preprocess_input(gender, age, bmi, hba1c, glucose, heart_disease, hypertensi
         **smoking_encoded
     }
 
-    # Ensure the correct order of columns
+    # Ensure correct order
     column_order = [
-        'age',
-        'hypertension',
-        'heart_disease',
-        'bmi',
-        'HbA1c_level',
-        'blood_glucose_level',
-        'gender_Female',
-        'gender_Male',
-        'gender_Other',
-        'smoking_history_No Info',
-        'smoking_history_current',
-        'smoking_history_ever',
-        'smoking_history_former',
-        'smoking_history_never',
-        'smoking_history_not current'
+        'age','hypertension','heart_disease','bmi','HbA1c_level','blood_glucose_level',
+        'gender_Female','gender_Male','gender_Other',
+        'smoking_history_No Info','smoking_history_current','smoking_history_ever',
+        'smoking_history_former','smoking_history_never','smoking_history_not current'
     ]
 
     return pd.DataFrame([[data[col] for col in column_order]], columns=column_order)
 
+# ------------------------
+# Routes
+# ------------------------
 @app.get("/", response_class=HTMLResponse)
 async def read_form(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request,
         "prediction": None,
         "diabetic_prob": None,
-        "form_data": {}  # Initialize empty form_data for initial load
+        "form_data": {}
     })
 
 @app.post("/predict/", response_class=HTMLResponse)
@@ -90,7 +110,6 @@ async def predict(
     hypertension: str = Form(...),
     smoking_history: str = Form(...)
 ):
-    # Collect form data to pass back to template
     form_data = {
         "gender": gender,
         "age": age,
@@ -102,13 +121,11 @@ async def predict(
         "smoking_history": smoking_history
     }
 
-    # Preprocess input for prediction
     df = preprocess_input(gender, age, bmi, hba1c, glucose, heart_disease, hypertension, smoking_history)
     pred_proba = model.predict_proba(df)
     pred_class = "Diabetic" if pred_proba[0][1] >= 0.5 else "Not Diabetic"
     result = f"Prediction: {pred_class} (Probability of Diabetic: {pred_proba[0][1]:.2%})"
 
-    # Render template with prediction and form data
     return templates.TemplateResponse("index.html", {
         "request": request,
         "prediction": result,

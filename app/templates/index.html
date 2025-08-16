@@ -206,10 +206,10 @@
         new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: ['Not Diabetic', 'Diabetic'],
+                labels: ['Diabetic','Not Diabetic'],
                 datasets: [{
-                    data: [notDiabeticProb, diabeticProb],
-                    backgroundColor: ['#4a90e2', '#e63946'],
+                    data: [diabeticProb, notDiabeticProb],
+                    backgroundColor: ['#e63946', '#4a90e2'],
                     borderColor: ['#ffffff', '#ffffff'],
                     borderWidth: 2
                 }]
@@ -238,5 +238,18 @@
             }
         });
     </script>
+	<script>
+	  // Wait until the DOM is fully loaded
+	  document.addEventListener("DOMContentLoaded", function() {
+	      // Check if the current URL contains "/predict"
+	      if (window.location.pathname.includes("/predict")) {
+	          // Scroll down smoothly to the bottom of the page
+	          window.scrollTo({
+	              top: document.body.scrollHeight,
+	              behavior: "smooth"
+	          });
+	      }
+	  });
+	</script>	
 </body>
 </html>
