@@ -124,7 +124,7 @@ diabetes-predictor-app/
 4. Create an IAM User and Role
 
      In the AWS IAM section, create a new user.
-     Assign a role with S3 access.
+     Assign a role with S3 access (AmazonS3ReadOnlyAccess policy)
 
 5. Generate Access Keys
 

@@ -18,6 +18,8 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
+USE_LOCAL_MODEL = 0 # 0 - use from AWS
+
 # ------------------------
 # Model Loading Logic
 # ------------------------
@@ -58,7 +60,7 @@ def load_model_from_s3():
 
 def load_model():
     """Decide whether to use local model or S3 model."""
-    use_local = 1 #or 0 if you want from AWS
+    use_local = USE_LOCAL_MODEL # 1 - from AWS, 0 - local model
     if use_local:
         
         print("loading from local")
