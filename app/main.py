@@ -25,30 +25,32 @@ USE_LOCAL_MODEL = 0 # 0 - use from AWS
 # ------------------------
 
 def load_model_from_s3():
-    
     print("loading from aws")
-    
+
+    AWS_BUCKET = None
+    AWS_MODEL_NAME = None
+    s3 = None
+
     try:
-        
-        # in root directory you need to have this file aws_credentials.py with all constants
-        
+        # Try to import local credentials file (for local dev)
         from aws_credentials import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET, AWS_MODEL_NAME
-        
+
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=AWS_REGION
+        )
+        print("Using local aws_credentials.py")
+
     except ImportError:
-        
-        AWS_ACCESS_KEY_ID = None
-        AWS_SECRET_ACCESS_KEY = None
-        AWS_REGION = None
-        AWS_BUCKET = None
-        AWS_MODEL_NAME = None
-    
-    """Download model from S3 and load it."""
-    s3 = boto3.client("s3",
-      aws_access_key_id=AWS_ACCESS_KEY_ID,
-      aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-      region_name=AWS_REGION
-    )
-    
+        # No credentials file, rely on IAM role (EC2 recommended way)
+        s3 = boto3.client("s3")
+        # You’ll need to hardcode or set as env vars in EC2
+        AWS_BUCKET = os.getenv("AWS_BUCKET")
+        AWS_MODEL_NAME = os.getenv("AWS_MODEL_NAME")
+        print("Using IAM role (EC2)")
+
     tmp_dir = tempfile.gettempdir()
     local_model_path = os.path.join(tmp_dir, AWS_MODEL_NAME)
 
