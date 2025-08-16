@@ -72,7 +72,7 @@ diabetes-predictor-app/
    
 ---
 
-## 📋 How To Install
+## 📋 How To Install Locally
 
 1. Clone the repository:
    ```bash
@@ -96,6 +96,41 @@ diabetes-predictor-app/
    ```
    http://127.0.0.1:8000
    ```
+
+## 📋 How To Use From AWS
+
+1. Create AWS Credentials File (if needed)
+     In your project root, create `aws_credentials.py` with:
+
+     AWS_ACCESS_KEY_ID = ""
+     AWS_SECRET_ACCESS_KEY = ""
+     AWS_REGION = ""
+     AWS_BUCKET = ""
+     AWS_MODEL_NAME = "diabetes_model.pkl"  # Update if renamed
+
+
+2. Create an S3 Bucket
+
+     Log in to AWS.
+     Create a new S3 bucket.
+     Set its name as the value of AWS_BUCKET in aws_credentials.py.
+
+
+3. Upload the Model
+
+     Upload diabetes_model.pkl to the S3 bucket.
+     If renamed, update AWS_MODEL_NAME accordingly.
+
+4. Create an IAM User and Role
+
+     In the AWS IAM section, create a new user.
+     Assign a role with S3 access.
+
+5. Generate Access Keys
+
+     Generate an access key and secret key for the IAM user.
+     Fill in AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in aws_credentials.py.
+
 
 ## Train Your Own Model
 Use the notebook in the `notebooks/` directory to load your data and train a new model. Save it with `joblib` or `pickle` to the `model/` folder.

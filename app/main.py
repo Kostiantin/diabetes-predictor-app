@@ -8,6 +8,10 @@ import os
 import tempfile
 import boto3
 
+    
+#to remove previous configs and cached model
+#os.remove(os.path.join(tempfile.gettempdir(), "diabetes_model.pkl"))
+
 app = FastAPI()
 
 # Mount static files
@@ -17,26 +21,49 @@ templates = Jinja2Templates(directory="app/templates")
 # ------------------------
 # Model Loading Logic
 # ------------------------
-bucket_name = "diabetes-model-bucket-2025"
-model_key = "diabetes_model.pkl"
 
 def load_model_from_s3():
+    
+    print("loading from aws")
+    
+    try:
+        
+        # in root directory you need to have this file aws_credentials.py with all constants
+        
+        from aws_credentials import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET, AWS_MODEL_NAME
+        
+    except ImportError:
+        
+        AWS_ACCESS_KEY_ID = None
+        AWS_SECRET_ACCESS_KEY = None
+        AWS_REGION = None
+        AWS_BUCKET = None
+        AWS_MODEL_NAME = None
+    
     """Download model from S3 and load it."""
-    s3 = boto3.client("s3")
+    s3 = boto3.client("s3",
+      aws_access_key_id=AWS_ACCESS_KEY_ID,
+      aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+      region_name=AWS_REGION
+    )
+    
     tmp_dir = tempfile.gettempdir()
-    local_model_path = os.path.join(tmp_dir, model_key)
+    local_model_path = os.path.join(tmp_dir, AWS_MODEL_NAME)
 
     # Download from S3 if not already cached
     if not os.path.exists(local_model_path):
-        s3.download_file(bucket_name, model_key, local_model_path)
+        s3.download_file(AWS_BUCKET, AWS_MODEL_NAME, local_model_path)
 
     return joblib.load(local_model_path)
 
 def load_model():
     """Decide whether to use local model or S3 model."""
-    use_local = os.getenv("USE_LOCAL_MODEL", "0") == "1"
+    use_local = 1 #or 0 if you want from AWS
     if use_local:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        print("loading from local")
+        
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         model_path = os.path.join(base_dir, "model", "diabetes_model.pkl")
         return joblib.load(model_path)
     else:
