@@ -6,3 +6,4 @@ joblib
 imbalanced-learn
 jinja2
 python-multipart
+boto3
