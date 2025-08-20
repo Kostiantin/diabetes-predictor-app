@@ -14,7 +14,7 @@
 
 This project is a lightweight, interactive **machine learning web app** that predicts the likelihood of diabetes based on user input. It leverages a **pre-trained Balanced Random Forest model**, a **FastAPI** backend, and a **HTML/Jinja2 frontend**.  
 
-**[Try the Live Demo](https://checkdiabetes.net/)** to predict diabetes risk with your own data!
+**[Try the Live Website](https://checkdiabetes.net/)** to predict diabetes risk with your own data!
 
 
 ---
